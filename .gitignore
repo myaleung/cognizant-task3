@@ -1,0 +1,43 @@
+# Ignore node_modules for JavaScript projects
+node_modules/
+
+# Ignore build output directories for JavaScript projects
+dist/
+build/
+
+# Ignore log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore environment variable files
+.env
+
+# msbuild output directories
+**/bin
+**/obj
+
+# vs intermediate directory
+**/.vs
+
+# MSBuild Binary and Structured Log
+*.binlog
+
+# Ignore strong name key files
+*.snk
+
+# Ignore Recycle Bin used by Visual Studio
+$RECYCLE.BIN/
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore NuGet packages
+*.nupkg
+
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
