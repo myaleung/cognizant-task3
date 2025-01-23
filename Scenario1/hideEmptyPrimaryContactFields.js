@@ -4,22 +4,35 @@ this.formHideEmptyContactFields = function (executionContext) {
   try { 
     const quickView = formContext.ui.quickForms.get("primary_contact_details");
 
-    if (quickView && quickView.isLoaded()) {
+    if (quickView !== null && quickView.isLoaded()) {
       hideEmptyContactFields(quickView);
     }
+    return;
 
   } catch (error) {
-    formContext.ui.setFormNotification(`Error: ${error.message}`, "ERROR", "IDCPL00003");
+    Xrm.Navigation.openErrorDialog({
+      message: error.message,
+      details: error.stack
+    });
   }
 }
 
+// Hide empty form fields in quick view form
 function hideEmptyContactFields(quickView) {
-  const qvEmail = quickView.getControl("emailaddress1").getAttribute()?.getValue();
-  const qvTelephone = quickView.getControl("telephone1").getAttribute()?.getValue();
-  const qvMobile = quickView.getControl("mobilephone").getAttribute()?.getValue();
+  hideIfEmpty(quickView, "emailaddress1");
+  hideIfEmpty(quickView, "telephone1");
+  hideIfEmpty(quickView, "mobilephone");
+}
 
-  // Hide empty fields in quick view form
-  if (qvEmail === null) quickView.getControl("emailaddress1").setVisible(false);
-  if (qvTelephone === null) quickView.getControl("telephone1").setVisible(false);
-  if (qvMobile === null) quickView.getControl("mobilephone").setVisible(false);
+// Hide control if its value is empty
+function hideIfEmpty(quickView, controlName) {
+  const control = quickView.getControl(controlName);
+  if (!control) {
+    throw new Error(`${controlName} could not be found in quick view form.`);
+  }
+
+  const value = control.getAttribute()?.getValue();
+  if (value === null) {
+    control.setVisible(false);
+  }
 }
