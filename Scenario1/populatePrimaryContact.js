@@ -7,11 +7,13 @@ this.formOnLoad = async function (executionContext) {
     if (customer == null) {
       formContext.ui.setFormNotification("Please select a customer.", "INFO", "IDUnique11111");
       return;
+    } else {
+      // Clear the form notification if customer is populated
+      formContext.ui.clearFormNotification("IDUnique11111");
     }
 
     // Hide contact field if customer is not an account
     if (customer[0].entityType !== "account") {
-      formContext.ui.setFormNotification("Customer is not an account, contact field hidden.", "WARNING", "IDUnique22222");
       formContext.getControl("primarycontactid").setVisible(false);
       return;
     }
@@ -23,7 +25,8 @@ this.formOnLoad = async function (executionContext) {
 
     setPrimaryContact(formContext, contactDetails);
   } catch (error) {
-    formContext.ui.setFormNotification(`Error: ${error.message}`, "ERROR", "IDUnique33333");
+    throw new Xrm.Navigation.openAlertDialog({
+      text: `Error: ${error.message}`});
   }
 }
 
@@ -33,6 +36,8 @@ function getCustomerId(formContext) {
   return customer ? customer[0].id.replace(/[{}]/g, "") : null;
 }
 
+//TODO: Update this function to merge the bottom using expand query
+// expand query to retrieve primary contact ID
 async function getPrimaryContactId(accountId) {
   try {
     const primaryContact = await Xrm.WebApi.retrieveRecord("account", accountId, "?$select=_primarycontactid_value");
@@ -42,6 +47,7 @@ async function getPrimaryContactId(accountId) {
   }
 }
 
+//TODO: Remove this function
 async function getContactDetails(customerId) {
   try {
     const contact = await Xrm.WebApi.retrieveRecord("contact", customerId, "?$select=fullname");

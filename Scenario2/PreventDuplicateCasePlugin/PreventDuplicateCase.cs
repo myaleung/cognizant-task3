@@ -54,11 +54,12 @@ namespace PreventDuplicateCasePlugin
             }
             catch (Exception ex)
             {
-                tracingService.Trace("Prevent Duplicate Case Error: {0}", ex.ToString());
+                tracingService.Trace("An error occurred in PreventDuplicateCase. Please contact support: {0}", ex.ToString());
                 throw new InvalidPluginExecutionException($"An error occurred in PreventDuplicateCase. {ex.Message}");
             }
         }
 
+        // Collect number of active cases for the account
         private int GetActiveCaseCount(IOrganizationService service, Guid accountId) 
         {
             QueryExpression query = new QueryExpression("incident")
@@ -71,7 +72,8 @@ namespace PreventDuplicateCasePlugin
                         new ConditionExpression("customerid", ConditionOperator.Equal, accountId),
                         new ConditionExpression("statecode", ConditionOperator.Equal, 0) // 0 = Active case
                     }
-                }
+                },
+                TopCount = 1 // Only need to check if there is at least one active case
             };
 
             EntityCollection existingCases = service.RetrieveMultiple(query);

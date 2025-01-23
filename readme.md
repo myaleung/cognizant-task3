@@ -52,9 +52,3 @@ This C# plugin is executed when a new case is created. It performs the following
 2. Add the JavaScript files to the appropriate form events (onLoad for the main form and quick view form).
 3. Deploy the C# plugin (`PreventDuplicateCase.cs`) to the Dynamics 365 server.
 4. Register the plugin step using the Plugin Registration Tool.
-
-## License
-This project is licensed under the MIT License.
-
-## Author
-Amy Leung
