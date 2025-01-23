@@ -1,15 +1,16 @@
-this.formOnLoad = async function (executionContext) {
+this.formPopulatePrimaryContactFields = async function (executionContext) {
   const formContext = executionContext.getFormContext();
+  formContext.ui.setFormNotification("Current Version: v8.", "INFO", "IDCPL00001");
 
   try {
     const customer = formContext.getAttribute("customerid").getValue();
-    // Set form notification if null
     if (customer == null) {
-      formContext.ui.setFormNotification("Please select a customer.", "INFO", "IDUnique11111");
+      // Set form notification if null
+      formContext.ui.setFormNotification("Please select a customer.", "INFO", "IDCPL00002");
       return;
     } else {
       // Clear the form notification if customer is populated
-      formContext.ui.clearFormNotification("IDUnique11111");
+      formContext.ui.clearFormNotification("IDCPL00002");
     }
 
     // Hide contact field if customer is not an account
@@ -20,13 +21,13 @@ this.formOnLoad = async function (executionContext) {
 
     // Set primary contact information from customer
     const customerId = getCustomerId(formContext);
-    const primaryContactId = await getPrimaryContactId(customerId);
-    const contactDetails = await getContactDetails(primaryContactId);
+    const primaryContactDetails = await getPrimaryContactDetails(customerId);
 
-    setPrimaryContact(formContext, contactDetails);
+    setPrimaryContact(formContext, primaryContactDetails);
   } catch (error) {
-    throw new Xrm.Navigation.openAlertDialog({
-      text: `Error: ${error.message}`});
+    Xrm.Navigation.openErrorDialog({
+      message: error.message,
+      details: error.stack});
   }
 }
 
@@ -36,34 +37,34 @@ function getCustomerId(formContext) {
   return customer ? customer[0].id.replace(/[{}]/g, "") : null;
 }
 
-//TODO: Update this function to merge the bottom using expand query
-// expand query to retrieve primary contact ID
-async function getPrimaryContactId(accountId) {
+// Retrieve primary contact details from account
+async function getPrimaryContactDetails(accountId) {
   try {
-    const primaryContact = await Xrm.WebApi.retrieveRecord("account", accountId, "?$select=_primarycontactid_value");
-    return primaryContact._primarycontactid_value;
-  } catch (error) {
-    throw new Error(`Failed to retrieve primary contact ID: ${error.message}`);
-  }
-}
+    // Retrieve and expand primary contact for contact details
+    const account = await Xrm.WebApi.retrieveRecord(
+      "account",
+      accountId,
+      "?$select=primarycontactid&$expand=primarycontactid($select=fullname)"
+    );
 
-//TODO: Remove this function
-async function getContactDetails(customerId) {
-  try {
-    const contact = await Xrm.WebApi.retrieveRecord("contact", customerId, "?$select=fullname");
     return {
-      id: customerId,
-      name: contact.fullname,
-    };
+      id: account.primarycontactid.contactid,
+      name: account.primarycontactid.fullname
+      };
   } catch (error) {
-    throw new Error(`Failed to retrieve contact details: ${error.message}`);
+    throw new Error(`Failed to retrieve primary contact: ${error.message}`);
   }
 }
 
+// Set Primary Contact quick view fields with contact details
 function setPrimaryContact(formContext, contactDetails) {
-  formContext.getAttribute("primarycontactid").setValue([{
+  console.log("Setting primary contact:", contactDetails);
+  const contactField = formContext.getAttribute("primarycontactid");
+
+  contactField.setValue([{
     id: contactDetails.id,
     name: contactDetails.name,
     entityType: "contact"
   }]);
+  contactField.fireOnChange();
 }

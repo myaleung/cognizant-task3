@@ -9,7 +9,7 @@ this.formHideEmptyContactFields = function (executionContext) {
     }
 
   } catch (error) {
-    formContext.ui.setFormNotification(`Error: ${error.message}`, "ERROR", "IDUnique33332");
+    formContext.ui.setFormNotification(`Error: ${error.message}`, "ERROR", "IDCPL00003");
   }
 }
 
