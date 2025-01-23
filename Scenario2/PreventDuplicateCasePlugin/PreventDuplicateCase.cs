@@ -31,9 +31,8 @@ namespace PreventDuplicateCasePlugin
                 Entity caseEntity = (Entity)context.InputParameters["Target"];
                 if (caseEntity == null) return;
 
-                // Get Account (Customer) and Case Title
+                // Get Account (Customer)
                 EntityReference customerRef = caseEntity.Contains("customerid") ? (EntityReference)caseEntity["customerid"] : null;
-                string caseTitle = caseEntity.Contains("title") ? caseEntity["title"].ToString() : string.Empty;
 
                 // Only check for duplicate cases if customer is an Account
                 if (customerRef == null || customerRef.LogicalName != "account") return;
