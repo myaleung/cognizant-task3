@@ -3,6 +3,8 @@
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 
+using PreventDuplicateCasePlugin.Helpers;
+
 namespace PreventDuplicateCasePlugin
 {
     public class PreventDuplicateCasePlugin : IPlugin
@@ -25,8 +27,10 @@ namespace PreventDuplicateCasePlugin
             }
 
             // Get the organization service and tracing service.
-            IOrganizationService service = GetOrganizationService(serviceProvider, context.UserId);
-            ITracingService tracingService = GetTracingService(serviceProvider);
+            //IOrganizationService service = GetOrganizationService(serviceProvider, context.UserId);
+            //ITracingService tracingService = GetTracingService(serviceProvider);
+            IOrganizationService service = ServiceHelper.GetOrganizationService(serviceProvider, context.UserId);
+            ITracingService tracingService = ServiceHelper.GetTracingService(serviceProvider);
 
             try
             {
@@ -47,7 +51,7 @@ namespace PreventDuplicateCasePlugin
                 }
 
                 // Retrieve the count of active cases for the account
-                int activeCaseCount = GetActiveCaseCount(service, customerRef.Id);
+                int activeCaseCount = CaseHelper.GetActiveCaseCount(service, customerRef.Id);
 
                 // Stop creation if there is already an active case open for the account
                 if (activeCaseCount > 0)
@@ -67,41 +71,6 @@ namespace PreventDuplicateCasePlugin
                 tracingService.Trace("An error occurred in PreventDuplicateCase. Please contact support: {0}", ex.ToString());
                 throw new InvalidPluginExecutionException($"An error occurred in PreventDuplicateCase. {ex.Message}");
             }
-        }
-
-        // Service helper method to retrieve the organization service for the specified user.
-        private IOrganizationService GetOrganizationService(IServiceProvider serviceProvider, Guid userId)
-        {
-            IOrganizationServiceFactory serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
-            return serviceFactory.CreateOrganizationService(userId);
-        }
-
-        // Retrieve the tracing service.
-        private ITracingService GetTracingService(IServiceProvider serviceProvider)
-        {
-            return (ITracingService)serviceProvider.GetService(typeof(ITracingService));
-        }
-
-        // Check if specific accountId has any active cases open
-        private int GetActiveCaseCount(IOrganizationService service, Guid accountId)
-        {
-            QueryExpression query = new QueryExpression("incident")
-            {
-                ColumnSet = new ColumnSet("statecode"),
-                Criteria = new FilterExpression
-                {
-                    Conditions =
-                    {
-                        new ConditionExpression("customerid", ConditionOperator.Equal, accountId),
-                        new ConditionExpression("statecode", ConditionOperator.Equal, 0) // 0 = Active case
-                    }
-                },
-                TopCount = 1 // Only need to check if there is at least one active case
-            };
-
-            // Execute the query and return the count of active cases.
-            EntityCollection existingCases = service.RetrieveMultiple(query);
-            return existingCases.Entities.Count;
         }
     }
 }
