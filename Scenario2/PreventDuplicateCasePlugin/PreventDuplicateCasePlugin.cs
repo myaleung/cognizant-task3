@@ -66,12 +66,12 @@ namespace PreventDuplicateCasePlugin
             }
         }
 
-        // Collect number of active cases for the account
+        // Check if specific accountId has any active cases open
         private int GetActiveCaseCount(IOrganizationService service, Guid accountId)
         {
             QueryExpression query = new QueryExpression("incident")
             {
-                ColumnSet = new ColumnSet(false),
+                ColumnSet = new ColumnSet("statecode"),
                 Criteria = new FilterExpression
                 {
                     Conditions =
